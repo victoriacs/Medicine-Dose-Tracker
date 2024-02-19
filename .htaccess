@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteRule ^signup$ app/controllers/SignupController.php [L]
+RewriteRule ^login$ app/controllers/LoginController.php [L]
+RewriteRule ^inicio$ index.php [L]
+RewriteRule ^logout$ app/controllers/LogoutController.php [L]
+RewriteRule ^form.css$ public/css/form.css [L]
