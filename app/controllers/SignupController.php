@@ -14,15 +14,13 @@ if (isset($_SESSION['logged'])) {
             
             //name
             if (!preg_match('/[0-9]/', $_POST['name']) && strlen($_POST['name']) <= 25) {
-                $name = strtolower($_POST['name']);
-                $name = ucwords($_POST['name']);
+                $name = ucwords(strtolower($_POST['name']));
             } else {
                 $error_messages['name'][] = "The name is not valid!";
             }
             //lastname
             if (!preg_match('/[0-9]/', $_POST['lastname']) && strlen($_POST['lastname']) <= 25) {
-                $lastname = strtolower($_POST['lastname']);
-                $lastname = ucwords($_POST['lastname']);
+                $lastname = ucwords(strtolower($_POST['lastname']));
             } else {
                 $error_messages['lastname'][] = "The lastname is not valid";
             }
@@ -37,7 +35,7 @@ if (isset($_SESSION['logged'])) {
             //password
             $uppercase = preg_match('@[A-Z]@', $_POST['password']);
             $lowercase = preg_match('@[a-z]@', $_POST['password']);
-            $number    = preg_match('@[0-9]@', $_POST['password']);
+            $number = preg_match('@[0-9]@', $_POST['password']);
             $specialChars = preg_match('@[^\w]@', $_POST['password']);
             if(!$uppercase || !$lowercase || !$number || !$specialChars || strlen($_POST['password']) < 8) {
                 $error_messages['password'][] = 'The password must be at least 8 characters long and must include at least one capital letter, one number and one special character.';

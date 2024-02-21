@@ -1,6 +1,12 @@
 RewriteEngine On
 RewriteRule ^signup$ app/controllers/SignupController.php [L]
 RewriteRule ^login$ app/controllers/LoginController.php [L]
-RewriteRule ^inicio$ index.php [L]
+RewriteRule ^home$ index.php [L]
 RewriteRule ^logout$ app/controllers/LogoutController.php [L]
 RewriteRule ^form.css$ public/css/form.css [L]
+RewriteRule ^header.css$ public/css/header.css [L]
+RewriteRule ^account$ app/controllers/MedicineController.php [L]
+RewriteRule ^account/add$ app/controllers/MedicineController.php?action=add [L]
+RewriteRule ^account/update$ app/controllers/MedicineController.php?action=update [L]
+RewriteRule ^account/delete$ app/controllers/MedicineController.php?action=delete [L]
+

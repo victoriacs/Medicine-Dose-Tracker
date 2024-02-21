@@ -37,7 +37,7 @@ class User {
     }
 
     public function getUser($pdo, $email) {
-        $sql = "SELECT name, lastname, email FROM users WHERE email = ?";
+        $sql = "SELECT * FROM users WHERE email = ?";
         $query = $pdo->prepare($sql);
         $query->execute([$email]);
         $result =  $query->fetch(PDO::FETCH_ASSOC);
