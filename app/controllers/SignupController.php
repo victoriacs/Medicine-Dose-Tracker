@@ -5,11 +5,14 @@ include_once("../config/database.php");
 $error_messages = [];
 $message_global;
 session_start();
+// If the user is already logged in, prevent them from register again
 if (isset($_SESSION['logged'])) {
-    header("Location: inicio");
+    header("Location: account");
     die();
 } else {
+    // If the form has been submitted
     if(isset($_POST['submit'])) {
+        // If the information are submitted
         if (isset($_POST['name'],$_POST['lastname'],$_POST['email'],$_POST['password'])) {
             
             //name
@@ -42,14 +45,17 @@ if (isset($_SESSION['logged'])) {
             } else {
                 $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
             }
-
+            
+            // If there are no errors, attempt to sign up.
             if (empty($error_messages)) {
                 $user = new User();
                 $result = $user->createUser($pdo, $name, $lastname, $email, $password);
+                 // If the user has been successfully created, set a cookie and redirect to the login page.
                 if($result) {
                     setcookie('currentRegistration', $email);
                     header("Location: login");
                     die();
+                // If the user is already registered display an error message and allow the user to try again.
                 } else {
                     $message_global = "User already registered.";
                 }

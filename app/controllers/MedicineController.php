@@ -1,43 +1,49 @@
 <?php 
 include_once("../models/MedicineModel.php");
 include_once("../config/database.php");
-
 session_start();
+// If the user is logged in, allow them to perform all actions.
 if (isset($_SESSION['logged'])) {
-    
+    // Gets the URL path
     $url = $_SERVER['REQUEST_URI'];
     $urlSegments = explode('/', rtrim($url, '/'));
     $action = end($urlSegments);
     $url_components = parse_url($action);
-    
+    // Gets the medicine id from update or delete
     if (isset($url_components['query'])) {
         parse_str($url_components['query'], $params);
         if (isset($params['id'])) {
             $medicine_id = $params['id'];
         }
     }
+    $medicine = new Medicine();
+    // Depending on the URL, perform different actions always passing the database variable.
             switch ($url_components['path']) {
                 case 'add':
-                    createMedicine($pdo);
+                    createMedicine($pdo, $medicine);
                     break;
                 case 'update':
-                    updateMedicine($pdo, $medicine_id);
+                    updateMedicine($pdo, $medicine_id, $medicine);
                     break;
                 case 'delete':
-                    deleteMedicine($pdo, $medicine_id);
+                    deleteMedicine($pdo, $medicine_id, $medicine);
                     break;
                 case 'account':
-                    showAll($pdo);
+                    showAll($pdo, $medicine);
                     break;
                 case 'default':
                     break;
             }
+// If the user is not logged in, redirect to login page.
 } else {
     header("Location: login");
     die();
 } 
-
-function createMedicine($pdo) {
+/**
+ * createMedicine
+ * Calls create function from Medicine Model including the add view.
+ */
+function createMedicine($pdo, $medicine) {
     if (isset($_POST['add'])) {
         $validationForm = validateForm($_POST['name'], $_POST['dosage'],$_POST['dosage_unit'],$_POST['frequency']);
         $error_messages = $validationForm['errors'];
@@ -49,8 +55,7 @@ function createMedicine($pdo) {
         $frequency = $valid_values['frequency'];
 
         if (empty($error_messages)) {
-            $sql = $pdo->prepare("INSERT INTO medicines (user_id, name, dosage, frequency) values (?,?,?,?)");
-            $sql->execute([$user_id, $name, $dosage, $frequency]);
+            $medicine ->create($pdo, $user_id, $name, $dosage, $frequency);
             header("Location: ../account");
             die();
         }
@@ -58,8 +63,11 @@ function createMedicine($pdo) {
     }
 include("../views/medicine/add.php");
 }
-
-function updateMedicine($pdo, $medicine_id) {
+/**
+ * updateMedicine
+ * Calls update function from Medicine Model including the update view.
+ */
+function updateMedicine($pdo, $medicine_id, $medicine) {
     $sql = $pdo->prepare("SELECT * FROM medicines WHERE id = ? AND user_id = ?");
     $sql->execute([$medicine_id,$_SESSION['logged']['id']]);
     $medicines = $sql->fetch();
@@ -80,45 +88,42 @@ function updateMedicine($pdo, $medicine_id) {
             $frequency = $valid_values['frequency'];
     
             if (empty($error_messages)) {
-                $sql = $pdo->prepare("UPDATE medicines SET name=?, dosage=?, frequency=? WHERE id=?");
-                $sql->execute([$name, $dosage, $frequency, $medicine_id]);
+                $medicine->update($pdo, $name, $dosage, $frequency, $medicine_id,$_SESSION['logged']['id']);
                 header("Location: ../account");
                 die();
             }
         }
         require("../views/medicine/update.php");
-    } else {
-        
-    }
-    
-}
-
-function deleteMedicine($pdo, $medicine_id) {
-    $sql = $pdo->prepare("DELETE FROM medicines WHERE id = ? AND user_id = ?");
-    $sql->execute([$medicine_id,$_SESSION['logged']['id']]);
-    $medicines = $sql->fetch();
-    if (!empty($medicines)) {
-        header("Location: ../account");
-        die();
-    } else {
-        header("Location: ../account");
-        die();
     }
 }
-
-function showAll($pdo) {
+/**
+ * deleteMedicine
+ * Calls delete function from Medicine Model and redirect to account page to see the updated medicines.
+ */
+function deleteMedicine($pdo, $medicine_id, $medicine) {
+    $medicine->delete($pdo, $medicine_id, $_SESSION['logged']['id']);
+    header("Location: ../account");
+    die();
+}
+/**
+ * showAll
+ * Calls showAll function from Medicine Model including the medicine view.
+ */
+function showAll($pdo, $medicine) {
     $user_id = implode([$_SESSION['logged']['id']]);
-    $sql = $pdo->prepare("SELECT * FROM medicines WHERE user_id = ?");
-    $sql->execute([$user_id]);
-    $medicines = $sql->fetchAll();
+    $medicines = $medicine->showAll($pdo, $user_id);
     require("../views/medicine/view.php");
 
 }
-
+/**
+ * validateForm
+ * Validates all the data for a medicine.   
+ */
 function validateForm($input_name, $input_dosage, $input_unit, $input_frequency) {
+    $error_messages = [];
+    $valid_values = [];
+    
     if (isset($_POST['name'],$_POST['dosage'],$_POST['dosage_unit'],$_POST['frequency'])) {
-        $error_messages = [];
-        $valid_values = [];
 
         //name
         if (!preg_match('/[0-9]/', $input_name) && strlen($input_name) <= 25) {
@@ -153,5 +158,6 @@ function validateForm($input_name, $input_dosage, $input_unit, $input_frequency)
     return [
         'errors' => $error_messages,
         'values' => $valid_values
-    ];}
+    ];
+}
 ?>

@@ -1,17 +1,10 @@
 <?php
 
 class User {
-    
-    private $name;
-    private $lastname;
-    private $password;
-
-    function __construct() {
-        $this->name = null;
-        $this->lastname = null;
-        $this->password = null;
-        
-    }
+    /**
+     * createUser
+     * Creates a new user and inserts it into the database.
+     */
     public function createUser($pdo, $name, $lastname, $email, $password) {
         try {
             $sql = "INSERT INTO users (name, lastname, email, password) values (?,?,?,?)";
@@ -24,6 +17,10 @@ class User {
         }
     }
 
+    /**
+     * loginUser
+     * Verifies if the user is in the table and checks if the password is correct.
+     */
     public function loginUser($pdo, $email, $password) {
         $sql = "SELECT * FROM users WHERE email = ?";
         $query = $pdo->prepare($sql);
@@ -36,67 +33,16 @@ class User {
         }
     }
 
+    /**
+     * getUser
+     * Returns the user from the database based on ther email address.
+     */
     public function getUser($pdo, $email) {
         $sql = "SELECT * FROM users WHERE email = ?";
         $query = $pdo->prepare($sql);
         $query->execute([$email]);
-        $result =  $query->fetch(PDO::FETCH_ASSOC);
+        $result = $query->fetch(PDO::FETCH_ASSOC);
         return $result;
-    }
-
-
-    /**
-     * Get the value of name
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Set the value of name
-     */
-    public function setName($name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of lastname
-     */
-    public function getLastname()
-    {
-        return $this->lastname;
-    }
-
-    /**
-     * Set the value of lastname
-     */
-    public function setLastname($lastname): self
-    {
-        $this->lastname = $lastname;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of password
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-    /**
-     * Set the value of password
-     */
-    public function setPassword($password): self
-    {
-        $this->password = $password;
-
-        return $this;
     }
 }
 
